@@ -24,9 +24,9 @@ func init() {
 type T interface {
 	GetAll(ctx context.Context, paging entity.RequestGetUsers) (entity.ResponseGetUsers, error)
 	Create(ctx context.Context, user entity.User) (entity.User, error)
-	GetById(ctx context.Context, userID string) (entity.User, error)
-	DeleteById(ctx context.Context, userID string) error
-	UpdateById(ctx context.Context, user entity.User) (entity.User, error)
+	GetByID(ctx context.Context, userID string) (entity.User, error)
+	DeleteByID(ctx context.Context, userID string) error
+	UpdateByID(ctx context.Context, user entity.User) (entity.User, error)
 }
 
 type impl struct {

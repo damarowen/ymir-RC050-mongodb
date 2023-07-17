@@ -129,7 +129,7 @@ func (h *Mongorest) GetByID(w http.ResponseWriter, r *http.Request) (GetUserResp
 		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	doc, err := h.UsersUsecase.GetById(ctx, request.UserID)
+	doc, err := h.UsersUsecase.GetByID(ctx, request.UserID)
 	if err != nil {
 		l.Info().Msg(err.Error())
 		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
@@ -157,7 +157,7 @@ func (h *Mongorest) UpdateByID(w http.ResponseWriter, r *http.Request) (GetUserR
 		Age:   request.Age,
 	}
 
-	doc, err := h.UsersUsecase.UpdateById(ctx, payload)
+	doc, err := h.UsersUsecase.UpdateByID(ctx, payload)
 	if err != nil {
 		l.Info().Msg(err.Error())
 		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
@@ -178,7 +178,7 @@ func (h *Mongorest) DeleteByID(w http.ResponseWriter, r *http.Request) (Response
 		return ResponseMessage{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	err = h.UsersUsecase.DeleteById(ctx, request.UserID)
+	err = h.UsersUsecase.DeleteByID(ctx, request.UserID)
 	if err != nil {
 		l.Info().Msg(err.Error())
 		return ResponseMessage{}, pkgRest.ErrBadRequest(w, r, err)
