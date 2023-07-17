@@ -70,11 +70,11 @@ func (i *impl) Create(ctx context.Context, user entity.User) (entity.User, error
 	return createdUser, nil
 }
 
-func (i *impl) GetById(ctx context.Context, userId string) (entity.User, error) {
+func (i *impl) GetByID(ctx context.Context, userID string) (entity.User, error) {
 	coll := i.adapter.PersistUsers.Collection("users")
 	var createdUser entity.User
 
-	id, err := primitive.ObjectIDFromHex(userId)
+	id, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return entity.User{}, err
 	}
@@ -88,7 +88,7 @@ func (i *impl) GetById(ctx context.Context, userId string) (entity.User, error) 
 	return createdUser, nil
 }
 
-func (i *impl) UpdateById(ctx context.Context, user entity.User) (entity.User, error) {
+func (i *impl) UpdateByID(ctx context.Context, user entity.User) (entity.User, error) {
 	coll := i.adapter.PersistUsers.Collection("users")
 
 	id, err := primitive.ObjectIDFromHex(user.ID)
@@ -127,13 +127,12 @@ func (i *impl) UpdateById(ctx context.Context, user entity.User) (entity.User, e
 	}
 
 	return user, nil
-
 }
 
-func (i *impl) DeleteById(ctx context.Context, userId string) error {
+func (i *impl) DeleteByID(ctx context.Context, userID string) error {
 	coll := i.adapter.PersistUsers.Collection("users")
 
-	id, err := primitive.ObjectIDFromHex(userId)
+	id, err := primitive.ObjectIDFromHex(userID)
 	if err != nil {
 		return err
 	}
@@ -144,7 +143,7 @@ func (i *impl) DeleteById(ctx context.Context, userId string) error {
 	var result bson.M
 	err = coll.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
-		return fmt.Errorf("no document with id %v was found", userId)
+		return fmt.Errorf("no document with id %v was found", userID)
 	}
 
 	// If document is found, attempt to delete

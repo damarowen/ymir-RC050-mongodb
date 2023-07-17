@@ -3,34 +3,34 @@ package rest
 
 import "github.com/kubuskotak/ymir-test/pkg/entity"
 
-// GetUsersRequest is a struct that embeds Pagination fields
+// GetListUsersRequest is a struct that embeds Pagination fields
 // for getting users request.
 type GetListUsersRequest struct {
 	entity.Pagination `json:"pagination"`
 }
 
 // ResponseMessage is a struct for response
-// that holds a message
+// that holds a message.
 type ResponseMessage struct {
 	Message string
 }
 
-// GetUsersResponse is a struct for response
+// GetListUsersResponse is a struct for response
 // that holds a slice of User objects.
 type GetListUsersResponse struct {
 	Data []entity.User
 }
 
-// GetUsersResponse is a struct for response
+// GetUserResponse is a struct for response
 // that return User objects.
 type GetUserResponse struct {
 	entity.User
 }
 
 // GetRequestParam is a struct for request
-// that holds a UserId from param
+// that holds a UserId from param.
 type GetRequestParam struct {
-	UserId string
+	UserID string
 }
 
 // UpsertUserRequest is a struct for request

@@ -54,10 +54,9 @@ func NewMongorest(opts ...MongorestOption) *Mongorest {
 func (h *Mongorest) Register(router chi.Router) {
 	router.Get("/users", pkgRest.HandlerAdapter[GetListUsersRequest](h.GetAll).JSON)
 	router.Post("/user", pkgRest.HandlerAdapter[UpsertUserRequest](h.Create).JSON)
-	router.Get("/user/{UserId}", pkgRest.HandlerAdapter[GetRequestParam](h.GetById).JSON)
-	router.Put("/user/{UserId}", pkgRest.HandlerAdapter[UpsertUserRequest](h.UpdateById).JSON)
-	router.Delete("/user/{UserId}", pkgRest.HandlerAdapter[GetRequestParam](h.DeleteById).JSON)
-
+	router.Get("/user/{UserId}", pkgRest.HandlerAdapter[GetRequestParam](h.GetByID).JSON)
+	router.Put("/user/{UserId}", pkgRest.HandlerAdapter[UpsertUserRequest](h.UpdateByID).JSON)
+	router.Delete("/user/{UserId}", pkgRest.HandlerAdapter[GetRequestParam](h.DeleteByID).JSON)
 }
 
 // GetAll user.
@@ -119,9 +118,9 @@ func (h *Mongorest) Create(w http.ResponseWriter, r *http.Request) (GetUserRespo
 	return GetUserResponse{User: documents}, nil
 }
 
-// Get By Id user.
-func (h *Mongorest) GetById(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
-	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "GetById")
+// GetByID user.
+func (h *Mongorest) GetByID(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "GetByID")
 	defer span.End()
 
 	request, err := pkgRest.GetBind[GetRequestParam](r)
@@ -130,19 +129,19 @@ func (h *Mongorest) GetById(w http.ResponseWriter, r *http.Request) (GetUserResp
 		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	doc, err := h.UsersUsecase.GetById(ctx, request.UserId)
+	doc, err := h.UsersUsecase.GetById(ctx, request.UserID)
 	if err != nil {
 		l.Info().Msg(err.Error())
 		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	l.Info().Msg("GetById")
+	l.Info().Msg("GetByID")
 	return GetUserResponse{User: doc}, nil
 }
 
-
-func (h *Mongorest) UpdateById(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
-	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "UpdateById")
+// UpdateByID user.
+func (h *Mongorest) UpdateByID(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "UpdateByID")
 	defer span.End()
 
 	request, err := pkgRest.GetBind[UpsertUserRequest](r)
@@ -152,7 +151,7 @@ func (h *Mongorest) UpdateById(w http.ResponseWriter, r *http.Request) (GetUserR
 	}
 
 	payload := entity.User{
-		ID: request.UserId,
+		ID:    request.UserID,
 		Name:  request.Name,
 		Email: request.Email,
 		Age:   request.Age,
@@ -164,13 +163,13 @@ func (h *Mongorest) UpdateById(w http.ResponseWriter, r *http.Request) (GetUserR
 		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	l.Info().Msg("UpdateById")
+	l.Info().Msg("UpdateByID")
 	return GetUserResponse{User: doc}, nil
 }
 
-
-func (h *Mongorest) DeleteById(w http.ResponseWriter, r *http.Request) (ResponseMessage, error) {
-	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "DeleteById")
+// DeleteByID user.
+func (h *Mongorest) DeleteByID(w http.ResponseWriter, r *http.Request) (ResponseMessage, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "DeleteByID")
 	defer span.End()
 
 	request, err := pkgRest.GetBind[GetRequestParam](r)
@@ -179,14 +178,14 @@ func (h *Mongorest) DeleteById(w http.ResponseWriter, r *http.Request) (Response
 		return ResponseMessage{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	err = h.UsersUsecase.DeleteById(ctx, request.UserId)
+	err = h.UsersUsecase.DeleteById(ctx, request.UserID)
 	if err != nil {
 		l.Info().Msg(err.Error())
 		return ResponseMessage{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
-	l.Info().Msg("DeleteById")
-	return ResponseMessage{Message:fmt.Sprintf("success delete %v", request.UserId)}, nil
+	l.Info().Msg("DeleteByID")
+	return ResponseMessage{Message: fmt.Sprintf("success delete %v", request.UserID)}, nil
 }
 
 // WithUsersUsecase allows setting the UsersUsecase during initialisation.

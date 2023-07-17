@@ -3,10 +3,11 @@ package users
 
 import (
 	"context"
+	"reflect"
+
 	"github.com/kubuskotak/ymir-test/pkg/adapters"
 	"github.com/kubuskotak/ymir-test/pkg/entity"
 	"github.com/kubuskotak/ymir-test/pkg/usecase"
-	"reflect"
 )
 
 func init() {
@@ -23,8 +24,8 @@ func init() {
 type T interface {
 	GetAll(ctx context.Context, paging entity.RequestGetUsers) (entity.ResponseGetUsers, error)
 	Create(ctx context.Context, user entity.User) (entity.User, error)
-	GetById(ctx context.Context, userId string) (entity.User, error)
-	DeleteById(ctx context.Context, userId string) error
+	GetById(ctx context.Context, userID string) (entity.User, error)
+	DeleteById(ctx context.Context, userID string) error
 	UpdateById(ctx context.Context, user entity.User) (entity.User, error)
 }
 

@@ -135,13 +135,13 @@ func (r *rootOptions) runServer(_ *cobra.Command, _ []string) error {
 		pkgRest.WithPort(strconv.Itoa(infrastructure.Envs.Ports.HTTP)),
 	)
 	// http register handlers
-h.Handler(rest.Routes().Register(
-	func(c chi.Router) http.Handler {
-		mongoRestHandler := rest.NewMongorest(rest.WithUsersUsecase(usc))
-		mongoRestHandler.Register(c)
-		return c
-	},
-))
+	h.Handler(rest.Routes().Register(
+		func(c chi.Router) http.Handler {
+			mongoRestHandler := rest.NewMongorest(rest.WithUsersUsecase(usc))
+			mongoRestHandler.Register(c)
+			return c
+		},
+	))
 	if err := h.ListenAndServe(); err != nil {
 		return err
 	}
