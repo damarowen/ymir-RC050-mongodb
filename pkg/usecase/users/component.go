@@ -3,11 +3,10 @@ package users
 
 import (
 	"context"
-	"reflect"
-
 	"github.com/kubuskotak/ymir-test/pkg/adapters"
 	"github.com/kubuskotak/ymir-test/pkg/entity"
 	"github.com/kubuskotak/ymir-test/pkg/usecase"
+	"reflect"
 )
 
 func init() {
@@ -22,8 +21,11 @@ func init() {
 
 // T is the interface implemented by all users Component implementations.
 type T interface {
-	Get(ctx context.Context, paging entity.RequestGetUsers) (entity.ResponseGetUsers, error)
+	GetAll(ctx context.Context, paging entity.RequestGetUsers) (entity.ResponseGetUsers, error)
 	Create(ctx context.Context, user entity.User) (entity.User, error)
+	GetById(ctx context.Context, userId string) (entity.User, error)
+	DeleteById(ctx context.Context, userId string) error
+	UpdateById(ctx context.Context, user entity.User) (entity.User, error)
 }
 
 type impl struct {

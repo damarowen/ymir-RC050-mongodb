@@ -2,6 +2,7 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -51,32 +52,36 @@ func NewMongorest(opts ...MongorestOption) *Mongorest {
 
 // Register is endpoint group for handler.
 func (h *Mongorest) Register(router chi.Router) {
-	router.Get("/users", pkgRest.HandlerAdapter[GetUsersRequest](h.GetAll).JSON)
-	router.Post("/user", pkgRest.HandlerAdapter[SaveUserRequest](h.Create).JSON)
+	router.Get("/users", pkgRest.HandlerAdapter[GetListUsersRequest](h.GetAll).JSON)
+	router.Post("/user", pkgRest.HandlerAdapter[UpsertUserRequest](h.Create).JSON)
+	router.Get("/user/{UserId}", pkgRest.HandlerAdapter[GetRequestParam](h.GetById).JSON)
+	router.Put("/user/{UserId}", pkgRest.HandlerAdapter[UpsertUserRequest](h.UpdateById).JSON)
+	router.Delete("/user/{UserId}", pkgRest.HandlerAdapter[GetRequestParam](h.DeleteById).JSON)
+
 }
 
 // GetAll user.
-func (h *Mongorest) GetAll(w http.ResponseWriter, r *http.Request) (GetUsersResponse, error) {
+func (h *Mongorest) GetAll(w http.ResponseWriter, r *http.Request) (GetListUsersResponse, error) {
 	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "GetAll")
 	defer span.End()
 	var (
-		request GetUsersRequest
+		request GetListUsersRequest
 	)
 
-	request, err := pkgRest.GetBind[GetUsersRequest](r)
+	request, err := pkgRest.GetBind[GetListUsersRequest](r)
 	if err != nil {
 		l.Info().Msg(err.Error())
-		return GetUsersResponse{}, pkgRest.ErrBadRequest(w, r, err)
+		return GetListUsersResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
 	payload := entity.RequestGetUsers{
 		Pagination: entity.Pagination{Limit: request.Limit, Page: request.Page},
 	}
 
-	documents, err := h.UsersUsecase.Get(ctx, payload)
+	documents, err := h.UsersUsecase.GetAll(ctx, payload)
 	if err != nil {
 		l.Info().Msg(err.Error())
-		return GetUsersResponse{}, pkgRest.ErrBadRequest(w, r, err)
+		return GetListUsersResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
 	pkgRest.Paging(r, pkgRest.Pagination{
@@ -84,19 +89,19 @@ func (h *Mongorest) GetAll(w http.ResponseWriter, r *http.Request) (GetUsersResp
 		Limit: documents.Limit,
 	})
 
-	l.Info().Msg("GetUsers")
-	return GetUsersResponse{Data: documents.Users}, nil
+	l.Info().Msg("GetAll")
+	return GetListUsersResponse{Data: documents.Users}, nil
 }
 
 // Create user.
-func (h *Mongorest) Create(w http.ResponseWriter, r *http.Request) (SaveUserResponse, error) {
-	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "Create")
+func (h *Mongorest) Create(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "CreateUser")
 	defer span.End()
 
-	request, err := pkgRest.GetBind[SaveUserRequest](r)
+	request, err := pkgRest.GetBind[UpsertUserRequest](r)
 	if err != nil {
 		l.Info().Msg(err.Error())
-		return SaveUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
+		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
 	payload := entity.User{
@@ -107,11 +112,81 @@ func (h *Mongorest) Create(w http.ResponseWriter, r *http.Request) (SaveUserResp
 
 	documents, err := h.UsersUsecase.Create(ctx, payload)
 	if err != nil {
-		return SaveUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
+		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
 	}
 
 	l.Info().Msg("CreateUser")
-	return SaveUserResponse{User: documents}, nil
+	return GetUserResponse{User: documents}, nil
+}
+
+// Get By Id user.
+func (h *Mongorest) GetById(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "GetById")
+	defer span.End()
+
+	request, err := pkgRest.GetBind[GetRequestParam](r)
+	if err != nil {
+		l.Info().Msg(err.Error())
+		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
+	}
+
+	doc, err := h.UsersUsecase.GetById(ctx, request.UserId)
+	if err != nil {
+		l.Info().Msg(err.Error())
+		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
+	}
+
+	l.Info().Msg("GetById")
+	return GetUserResponse{User: doc}, nil
+}
+
+
+func (h *Mongorest) UpdateById(w http.ResponseWriter, r *http.Request) (GetUserResponse, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "UpdateById")
+	defer span.End()
+
+	request, err := pkgRest.GetBind[UpsertUserRequest](r)
+	if err != nil {
+		l.Info().Msg(err.Error())
+		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
+	}
+
+	payload := entity.User{
+		ID: request.UserId,
+		Name:  request.Name,
+		Email: request.Email,
+		Age:   request.Age,
+	}
+
+	doc, err := h.UsersUsecase.UpdateById(ctx, payload)
+	if err != nil {
+		l.Info().Msg(err.Error())
+		return GetUserResponse{}, pkgRest.ErrBadRequest(w, r, err)
+	}
+
+	l.Info().Msg("UpdateById")
+	return GetUserResponse{User: doc}, nil
+}
+
+
+func (h *Mongorest) DeleteById(w http.ResponseWriter, r *http.Request) (ResponseMessage, error) {
+	ctx, span, l := pkgTracer.StartSpanLogTrace(r.Context(), "DeleteById")
+	defer span.End()
+
+	request, err := pkgRest.GetBind[GetRequestParam](r)
+	if err != nil {
+		l.Info().Msg(err.Error())
+		return ResponseMessage{}, pkgRest.ErrBadRequest(w, r, err)
+	}
+
+	err = h.UsersUsecase.DeleteById(ctx, request.UserId)
+	if err != nil {
+		l.Info().Msg(err.Error())
+		return ResponseMessage{}, pkgRest.ErrBadRequest(w, r, err)
+	}
+
+	l.Info().Msg("DeleteById")
+	return ResponseMessage{Message:fmt.Sprintf("success delete %v", request.UserId)}, nil
 }
 
 // WithUsersUsecase allows setting the UsersUsecase during initialisation.

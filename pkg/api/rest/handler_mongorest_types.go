@@ -5,24 +5,37 @@ import "github.com/kubuskotak/ymir-test/pkg/entity"
 
 // GetUsersRequest is a struct that embeds Pagination fields
 // for getting users request.
-type GetUsersRequest struct {
+type GetListUsersRequest struct {
 	entity.Pagination `json:"pagination"`
+}
+
+// ResponseMessage is a struct for response
+// that holds a message
+type ResponseMessage struct {
+	Message string
 }
 
 // GetUsersResponse is a struct for response
 // that holds a slice of User objects.
-type GetUsersResponse struct {
+type GetListUsersResponse struct {
 	Data []entity.User
 }
 
-// SaveUserResponse is a struct for response
-// that holds a User object.
-type SaveUserResponse struct {
+// GetUsersResponse is a struct for response
+// that return User objects.
+type GetUserResponse struct {
 	entity.User
 }
 
-// SaveUserRequest is a struct for request
+// GetRequestParam is a struct for request
+// that holds a UserId from param
+type GetRequestParam struct {
+	UserId string
+}
+
+// UpsertUserRequest is a struct for request
 // that holds a User object.
-type SaveUserRequest struct {
+type UpsertUserRequest struct {
+	GetRequestParam
 	entity.User
 }
